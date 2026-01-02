@@ -19,7 +19,8 @@ use crate::stats::{Player,
     GRID_SIZE,
     PLAY_BUTTON_POS,
     ENEMY_ATTACK_STUN,
-    QUIT_BUTTON_POS};
+    QUIT_BUTTON_POS,
+    ENEMY_SPEED};
 
 
 pub struct Node {
@@ -222,7 +223,7 @@ fn enemy_movement (
     }
     let attack_stun_time = ENEMY_ATTACK_STUN;
     for (mut transform, mut sprite, mut enemy_component) in &mut enemy_pos {
-        let speed: f32 = enemy_component.enemy_speed * time.delta_secs();
+        let speed: f32 = ENEMY_SPEED * time.delta_secs();
         
         if let Ok((player_transform, mut player_health)) = player.single_mut() {
             if enemy_component.stun_timer > 0.0 {

@@ -4,7 +4,6 @@ use crate::engine::despawn_boxes;
 
 //TODO ADD SETTINGS MENU FOR DYNAMIC TESTING
 //PLAYER STATS
-pub const SPEED: f32 = 300.0;
 pub const SPAWNABLE_RANGE: f32 = 200.0;
 
 //GAME STATS
@@ -16,9 +15,11 @@ pub const ENEMY_SPAWNS: f32 = 10.0;
 pub const ENEMY_CURRENT_HP: i32 = 5;
 pub const ENEMY_MAX_HP: i32 = 5;
 pub const ENEMY_ATTACK_STUN: f32 = 0.8;
+pub const ENEMY_SPEED: f32 = 200.0;
 
 
-pub const PLAYER_BUILD_STUN: f32 = 0.8;
+pub const PLAYER_BUILD_STUN: f32 = 0.3;
+pub const PLAYER_SPEED: f32 = 250.0;
 
 //UI STATS
 pub const PLAY_BUTTON_POS: (f32, f32, f32, f32) = (500.0, 250.0, 300.0, -200.0); //size, size, pos, pos
@@ -50,7 +51,6 @@ pub struct Line; // Visual aid between 2 things
 #[derive(Component)]
 pub struct Enemy {
     pub id: usize,
-    pub enemy_speed: f32,
     pub memory: Vec<(i32, i32)>,
     pub memory_recency: bool,
     pub target: Option<(i32, i32)>,
@@ -253,7 +253,7 @@ fn spawn_enemies (
                 ..default()
             },
             Transform::from_xyz(0.0, 0.0, 15.0),
-            Enemy {id: ((GAME_TIME - game_time.timer) / ENEMY_SPAWNS).round() as usize, enemy_speed: (SPEED + ((GAME_TIME - game_time.timer) / ENEMY_SPAWNS * 20.0)) / 3.0, memory: Vec::new(), memory_recency: true, target: None, rage: true, stun_timer: 0.0},
+            Enemy {id: ((GAME_TIME - game_time.timer) / ENEMY_SPAWNS).round() as usize, memory: Vec::new(), memory_recency: true, target: None, rage: true, stun_timer: 0.0},
             Health { current: ENEMY_CURRENT_HP, max: ENEMY_MAX_HP},
         ));
     }

@@ -19,7 +19,7 @@ use crate::stats::Map;
 use crate::stats::Enemy;
 use crate::stats::SPAWNABLE_RANGE;
 //use crate::stats::Line;
-use crate::stats::SPEED;
+use crate::stats::PLAYER_SPEED;
 use crate::stats::GAME_TIME;
 use crate::stats::PLAY_BUTTON_POS;
 use crate::stats::QUIT_BUTTON_POS;
@@ -80,7 +80,7 @@ fn character_movement(
             player_component.stun_timer -= time.delta_secs();
         }
         else {
-            let speed: f32 = SPEED * time.delta_secs();
+            let speed: f32 = PLAYER_SPEED * time.delta_secs();
             if input.pressed(KeyCode::KeyA) && !input.pressed(KeyCode::KeyD) {
                 let mut boxes_checked = true;
                 for (k, v) in &game_state.grid_pairs {
