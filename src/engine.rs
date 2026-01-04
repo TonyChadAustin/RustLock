@@ -19,8 +19,7 @@ use crate::stats::{Player,
     GRID_SIZE,
     PLAY_BUTTON_POS,
     ENEMY_ATTACK_STUN,
-    QUIT_BUTTON_POS,
-    ENEMY_SPEED};
+    QUIT_BUTTON_POS,};
 
 
 pub struct Node {
@@ -223,7 +222,7 @@ fn enemy_movement (
     }
     let attack_stun_time = ENEMY_ATTACK_STUN;
     for (mut transform, mut sprite, mut enemy_component) in &mut enemy_pos {
-        let speed: f32 = ENEMY_SPEED * time.delta_secs();
+        let speed: f32 = enemy_component.variant.speed() * time.delta_secs();
         
         if let Ok((player_transform, mut player_health)) = player.single_mut() {
             if enemy_component.stun_timer > 0.0 {
@@ -235,7 +234,7 @@ fn enemy_movement (
                 sprite.image = asset_server.load("enemy_rage.png");
             }
             else {
-                sprite.image = asset_server.load("enemy.png");
+                sprite.image = asset_server.load(enemy_component.image);
             }
             
             let player_pos = player_transform.translation.truncate();
@@ -244,7 +243,7 @@ fn enemy_movement (
                 enemy_component.memory.clear();
                 if (transform.translation.x - player_pos.x).abs() < 31.0 && (transform.translation.y - player_pos.y).abs() < 31.0 {
                     if player_health.current > 0 {
-                        player_health.current -= 1;
+                        player_health.current -= enemy_component.variant.damage();
                         enemy_component.stun_timer = attack_stun_time;
                     }
                 }
@@ -271,7 +270,7 @@ fn enemy_movement (
                         for (box_transform, mut box_health) in &mut boxes {
                             if (box_transform.translation.x - blocked.1.x).abs() < 90.0 && (box_transform.translation.y - blocked.1.y).abs() < 90.0 {
                                 if box_health.current > 0 {
-                                    box_health.current -= 1;
+                                    box_health.current -= enemy_component.variant.damage();
                                     enemy_component.stun_timer = attack_stun_time;
                                 }
                             }

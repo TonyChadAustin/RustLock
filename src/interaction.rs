@@ -24,6 +24,7 @@ use crate::stats::GAME_TIME;
 use crate::stats::PLAY_BUTTON_POS;
 use crate::stats::QUIT_BUTTON_POS;
 use crate::stats::PLAYER_BUILD_STUN;
+use crate::stats::BOX_HP;
 
 
 pub struct InteractionPlugin;
@@ -303,7 +304,7 @@ fn spawn_object_at_cursor(
                             },
                             Transform::from_xyz(wx as f32, wy as f32, 10.0),
                             Box,
-                            Health { current: 2, max: 2},
+                            Health { current: BOX_HP, max: BOX_HP},
                         ));
                         //game_state.boxes.push(((wx, wy), (50, 50)));
                         game_state.grid_pairs.entry((wx-25, wy-25)).or_default();

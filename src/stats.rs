@@ -1,10 +1,12 @@
 use bevy::prelude::*;
 use std::collections::BTreeMap;
 use crate::engine::despawn_boxes;
+use rand::prelude::*;
 
 //TODO ADD SETTINGS MENU FOR DYNAMIC TESTING
 //PLAYER STATS
 pub const SPAWNABLE_RANGE: f32 = 200.0;
+pub const BOX_HP: i32 = 5;
 
 //GAME STATS
 pub const GRID_SIZE: i32 = 1300; // 1300 minimum that looks clean, more might be better idk
@@ -15,7 +17,6 @@ pub const ENEMY_SPAWNS: f32 = 10.0;
 pub const ENEMY_CURRENT_HP: i32 = 5;
 pub const ENEMY_MAX_HP: i32 = 5;
 pub const ENEMY_ATTACK_STUN: f32 = 0.8;
-pub const ENEMY_SPEED: f32 = 200.0;
 
 
 pub const PLAYER_BUILD_STUN: f32 = 0.3;
@@ -47,10 +48,48 @@ pub struct Grid { // Normalization of world pixels to 50x50
 #[derive(Component)]
 pub struct Line; // Visual aid between 2 things
 
+pub enum EnemyVariant {
+    Standard,
+    SlowRed,
+    FastGreen,
+}
+
+impl EnemyVariant {
+    pub fn speed(&self) -> f32 {
+        match self {
+            EnemyVariant::Standard => 200.0,
+            EnemyVariant::SlowRed => 160.0,
+            EnemyVariant::FastGreen => 240.0
+        }
+    }
+    pub fn color(&self) -> Color {
+        match self {
+            EnemyVariant::Standard => Color::srgb(0.0, 0.0, 1.0),
+            EnemyVariant::SlowRed => Color::srgb(1.0, 0.0, 0.0),
+            EnemyVariant::FastGreen => Color::srgb(0.0, 1.0, 0.0)
+        }
+    }
+    pub fn damage(&self) -> i32 {
+        match self {
+            EnemyVariant::Standard => 2,
+            EnemyVariant::SlowRed => 5,
+            EnemyVariant::FastGreen => 1
+        }
+    }
+    pub fn hp(&self) -> i32 {
+        match self {
+            EnemyVariant::Standard => 5,
+            EnemyVariant::SlowRed => 15,
+            EnemyVariant::FastGreen => 3
+        }
+    }
+}
 
 #[derive(Component)]
 pub struct Enemy {
     pub id: usize,
+    pub image: &'static str,
+    pub variant: EnemyVariant,
     pub memory: Vec<(i32, i32)>,
     pub memory_recency: bool,
     pub target: Option<(i32, i32)>,
@@ -246,15 +285,42 @@ fn spawn_enemies (
             }
         }
         //println!("game_time.timer / ENEMY_SPAWNS = {}", game_time.timer / ENEMY_SPAWNS);
-        commands.spawn((
-            Sprite {
-                custom_size: Some(Vec2::new(90.0, 90.0)),
-                image: asset_server.load("enemy.png"),
-                ..default()
-            },
-            Transform::from_xyz(0.0, 0.0, 15.0),
-            Enemy {id: ((GAME_TIME - game_time.timer) / ENEMY_SPAWNS).round() as usize, memory: Vec::new(), memory_recency: true, target: None, rage: true, stun_timer: 0.0},
-            Health { current: ENEMY_CURRENT_HP, max: ENEMY_MAX_HP},
-        ));
+        let enemytype = rand::random_range(0..10);
+        if enemytype == 0 {
+            commands.spawn((
+                Sprite {
+                    custom_size: Some(Vec2::new(90.0, 90.0)),
+                    image: asset_server.load("enemygreen.png"),
+                    ..default()
+                },
+                Transform::from_xyz(0.0, 0.0, 15.0),
+                Enemy {id: ((GAME_TIME - game_time.timer) / ENEMY_SPAWNS).round() as usize, image: "enemygreen.png", variant: EnemyVariant::FastGreen, memory: Vec::new(), memory_recency: true, target: None, rage: true, stun_timer: 0.0},
+                Health { current: ENEMY_CURRENT_HP, max: ENEMY_MAX_HP},
+            ));
+        }
+        else if enemytype == 1 {
+            commands.spawn((
+                Sprite {
+                    custom_size: Some(Vec2::new(90.0, 90.0)),
+                    image: asset_server.load("enemyred.png"),
+                    ..default()
+                },
+                Transform::from_xyz(0.0, 0.0, 15.0),
+                Enemy {id: ((GAME_TIME - game_time.timer) / ENEMY_SPAWNS).round() as usize, image: "enemyred.png", variant: EnemyVariant::SlowRed, memory: Vec::new(), memory_recency: true, target: None, rage: true, stun_timer: 0.0},
+                Health { current: ENEMY_CURRENT_HP, max: ENEMY_MAX_HP},
+            ));
+        }
+        else {
+            commands.spawn((
+                Sprite {
+                    custom_size: Some(Vec2::new(90.0, 90.0)),
+                    image: asset_server.load("enemyblue.png"),
+                    ..default()
+                },
+                Transform::from_xyz(0.0, 0.0, 15.0),
+                Enemy {id: ((GAME_TIME - game_time.timer) / ENEMY_SPAWNS).round() as usize, image: "enemyblue.png", variant: EnemyVariant::Standard, memory: Vec::new(), memory_recency: true, target: None, rage: true, stun_timer: 0.0},
+                Health { current: ENEMY_CURRENT_HP, max: ENEMY_MAX_HP},
+            ));
+        }
     }
 }
