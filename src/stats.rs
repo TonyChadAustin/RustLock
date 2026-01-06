@@ -26,6 +26,7 @@ pub const PLAYER_SPEED: f32 = 250.0;
 pub const PLAY_BUTTON_POS: (f32, f32, f32, f32) = (400.0, 180.0, 300.0, 0.0); //size, size, pos, pos
 pub const SETTINGS_BUTTON_POS: (f32, f32, f32, f32) = (400.0, 180.0, 300.0, -250.0);
 pub const QUIT_BUTTON_POS: (f32, f32, f32, f32) = (400.0, 180.0, 300.0, -500.0);
+pub const TOGGLE_FULLSCREEN_BUTTON_POS: (f32, f32, f32, f32) = (50.0, 50.0, 0.0, 0.0);
 
 #[derive(Resource)]
 pub struct CursorPos(pub Vec2, pub Option<Vec2>);
@@ -110,6 +111,9 @@ pub struct QuitButton;
 
 #[derive(Component)]
 pub struct SettingsButton;
+
+#[derive(Component)]
+pub struct ToggleFullscreenButton;
 
 #[derive(Resource)]
 pub struct PathfindTrigger {
