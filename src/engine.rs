@@ -6,6 +6,7 @@ use std::cmp::Ordering;
 //use crate::stats::GameStats;
 use crate::stats::{Player,
     QuitButton,
+    SettingsButton,
     PlayButton,
     MenuScreen,
     Grid,
@@ -17,8 +18,9 @@ use crate::stats::{Player,
     Enemy,
     PathfindTrigger,
     GRID_SIZE,
-    PLAY_BUTTON_POS,
     ENEMY_ATTACK_STUN,
+    PLAY_BUTTON_POS,
+    SETTINGS_BUTTON_POS,
     QUIT_BUTTON_POS,};
 
 
@@ -78,6 +80,15 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         },
         Transform::from_xyz(PLAY_BUTTON_POS.2, PLAY_BUTTON_POS.3, 1.0),
         PlayButton,
+    ));
+    commands.spawn( (
+        Sprite {
+            custom_size: Some(Vec2::new(SETTINGS_BUTTON_POS.0, SETTINGS_BUTTON_POS.1)),
+            image: asset_server.load("settings.png"),
+            ..default()
+        },
+        Transform::from_xyz(SETTINGS_BUTTON_POS.2, SETTINGS_BUTTON_POS.3, 1.0),
+        SettingsButton,
     ));
     commands.spawn( (
         Sprite {

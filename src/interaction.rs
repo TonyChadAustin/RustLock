@@ -1,3 +1,4 @@
+use bevy::input::mouse;
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
 
@@ -12,6 +13,7 @@ use crate::stats::CursorPos;
 use crate::stats::Player;
 use crate::stats::MenuScreen;
 use crate::stats::QuitButton;
+use crate::stats::SettingsButton;
 use crate::stats::PlayButton;
 use crate::stats::Grid;
 use crate::stats::Box;
@@ -35,6 +37,7 @@ impl Plugin for InteractionPlugin {
             track_cursor,
             character_movement,
             quit_button,
+            settings_button,
             play_button,
             spawn_object_at_cursor,
         ));
@@ -176,10 +179,15 @@ fn play_button(
     asset_server: Res<AssetServer>,
     menu: Query<Entity, With<MenuScreen>>,
     play_button: Query<Entity, With<PlayButton>>,
+    settings_button: Query<Entity, With<SettingsButton>>,
     quit_button: Query<Entity, With<QuitButton>>,
     player: Query<Entity, With<Player>>,
     mut game_state: ResMut<GameState>,
 ) {
+    match game_state.game_state {
+        States::StartMenu => (),
+        _ => return,
+    }
     if let Ok(_) = menu.single() {
         if mouse_input.just_pressed(MouseButton::Left) {
             if let Some(world_position) = cursor_pos.1 {
@@ -187,6 +195,7 @@ fn play_button(
                     if world_position.y > PLAY_BUTTON_POS.3 - (PLAY_BUTTON_POS.1 / 2.0) + 4.0 && world_position.y < PLAY_BUTTON_POS.3 + (PLAY_BUTTON_POS.1 / 2.0) - 4.0 {
                         commands.entity(menu.single().unwrap()).despawn();
                         commands.entity(play_button.single().unwrap()).despawn();
+                        commands.entity(settings_button.single().unwrap()).despawn();
                         commands.entity(quit_button.single().unwrap()).despawn();
                         commands.spawn((
                             Sprite {
@@ -219,10 +228,55 @@ fn play_button(
     }
 }
 
+fn settings_button(
+    mouse_input: Res<ButtonInput<MouseButton>>,
+    cursor_pos: Res<CursorPos>,
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    play_button: Query<Entity, With<PlayButton>>,
+    settings_button: Query<Entity, With<SettingsButton>>,
+    quit_button: Query<Entity, With<QuitButton>>,
+    mut game_state: ResMut<GameState>,
+) {
+    match game_state.game_state {
+        States::StartMenu => (),
+        _ => return,
+    }
+    if mouse_input.just_pressed(MouseButton::Left) {
+        if let Some(world_position) = cursor_pos.1 {
+            if world_position.x > PLAY_BUTTON_POS.2 - (PLAY_BUTTON_POS.0 / 2.0) + 4.0 && world_position.x < PLAY_BUTTON_POS.2 + (PLAY_BUTTON_POS.0 / 2.0) - 4.0 {
+                if world_position.y > PLAY_BUTTON_POS.3 - (PLAY_BUTTON_POS.1 / 2.0) + 4.0 && world_position.y < PLAY_BUTTON_POS.3 + (PLAY_BUTTON_POS.1 / 2.0) - 4.0 {
+                    commands.entity(play_button.single().unwrap()).insert(Visibility::Hidden);
+                    commands.entity(settings_button.single().unwrap()).insert(Visibility::Hidden);
+                    commands.entity(quit_button.single().unwrap()).insert(Visibility::Hidden);
+                    
+                    game_state.game_state = States::SettingsMenu;
+                    //mut primary_window: Query<&mut Window, WIth<PrimaryWindow>>,
+                    //let mut window = match primary_window.single_mut() {
+                        //Ok(w) => w,
+                        //Err(_) => return,
+
+                    //window.mode = if window.mode == WindowMode::BorderlessFullscreen(MonitorSelection::Primary)
+                    //window.resolution.set(1820, 980);
+                    //WindowMode::Windowed
+
+                    //else {WindowMode::BorderlessFullscreen(MonitorSelection::Primary)};
+                    
+                }
+            }
+        }
+    }
+}
+
 fn quit_button(
     mouse_input: Res<ButtonInput<MouseButton>>,
     cursor_pos: Res<CursorPos>,
+    game_state: ResMut<GameState>,
 ) {
+    match game_state.game_state {
+        States::StartMenu => (),
+        _ => return,
+    }
     if mouse_input.just_pressed(MouseButton::Left) {
         if let Some(world_position) = cursor_pos.1 {
             if world_position.x > QUIT_BUTTON_POS.2 - (QUIT_BUTTON_POS.0 / 2.0) + 4.0 && world_position.x < QUIT_BUTTON_POS.2 + (QUIT_BUTTON_POS.0 / 2.0) - 4.0 {
