@@ -26,7 +26,8 @@ pub const PLAYER_SPEED: f32 = 250.0;
 pub const PLAY_BUTTON_POS: (f32, f32, f32, f32) = (400.0, 180.0, 300.0, 0.0); //size, size, pos, pos
 pub const SETTINGS_BUTTON_POS: (f32, f32, f32, f32) = (400.0, 180.0, 300.0, -250.0);
 pub const QUIT_BUTTON_POS: (f32, f32, f32, f32) = (400.0, 180.0, 300.0, -500.0);
-pub const TOGGLE_FULLSCREEN_BUTTON_POS: (f32, f32, f32, f32) = (50.0, 50.0, 0.0, 0.0);
+pub const TOGGLE_FULLSCREEN_BUTTON_POS: (f32, f32, f32, f32) = (50.0, 50.0, 300.0, -100.0);
+pub const BACK_TO_MENU_BUTTON_POS: (f32, f32, f32, f32) = (400.0, 180.0, 700.0, -250.0);
 
 #[derive(Resource)]
 pub struct CursorPos(pub Vec2, pub Option<Vec2>);
@@ -64,13 +65,6 @@ impl EnemyVariant {
             EnemyVariant::FastGreen => 240.0
         }
     }
-    pub fn color(&self) -> Color {
-        match self {
-            EnemyVariant::Standard => Color::srgb(0.0, 0.0, 1.0),
-            EnemyVariant::SlowRed => Color::srgb(1.0, 0.0, 0.0),
-            EnemyVariant::FastGreen => Color::srgb(0.0, 1.0, 0.0)
-        }
-    }
     pub fn damage(&self) -> i32 {
         match self {
             EnemyVariant::Standard => 2,
@@ -95,6 +89,7 @@ pub struct Enemy {
     pub memory: Vec<(i32, i32)>,
     pub memory_recency: bool,
     pub target: Option<(i32, i32)>,
+    pub hp: i32,
     //pub state_changed: bool,
     pub rage: bool,
     pub stun_timer: f32,
@@ -114,6 +109,9 @@ pub struct SettingsButton;
 
 #[derive(Component)]
 pub struct ToggleFullscreenButton;
+
+#[derive(Component)]
+pub struct BackToMenuButton;
 
 #[derive(Resource)]
 pub struct PathfindTrigger {
@@ -302,7 +300,15 @@ fn spawn_enemies (
                     ..default()
                 },
                 Transform::from_xyz(0.0, 0.0, 15.0),
-                Enemy {id: ((GAME_TIME - game_time.timer) / ENEMY_SPAWNS).round() as usize, image: "enemygreen.png", variant: EnemyVariant::FastGreen, memory: Vec::new(), memory_recency: true, target: None, rage: true, stun_timer: 0.0},
+                Enemy {id: ((GAME_TIME - game_time.timer) / ENEMY_SPAWNS).round() as usize, 
+                    image: "enemygreen.png", 
+                    variant: EnemyVariant::FastGreen, 
+                    memory: Vec::new(), 
+                    memory_recency: true, 
+                    target: None, 
+                    hp: EnemyVariant::FastGreen.hp(),
+                    rage: true, 
+                    stun_timer: 0.0},
                 Health { current: ENEMY_CURRENT_HP, max: ENEMY_MAX_HP},
             ));
         }
@@ -314,7 +320,15 @@ fn spawn_enemies (
                     ..default()
                 },
                 Transform::from_xyz(0.0, 0.0, 15.0),
-                Enemy {id: ((GAME_TIME - game_time.timer) / ENEMY_SPAWNS).round() as usize, image: "enemyred.png", variant: EnemyVariant::SlowRed, memory: Vec::new(), memory_recency: true, target: None, rage: true, stun_timer: 0.0},
+                Enemy {id: ((GAME_TIME - game_time.timer) / ENEMY_SPAWNS).round() as usize, 
+                    image: "enemyred.png", 
+                    variant: EnemyVariant::SlowRed, 
+                    memory: Vec::new(), 
+                    memory_recency: true, 
+                    target: None, 
+                    hp: EnemyVariant::SlowRed.hp(),
+                    rage: true, 
+                    stun_timer: 0.0},
                 Health { current: ENEMY_CURRENT_HP, max: ENEMY_MAX_HP},
             ));
         }
@@ -326,7 +340,15 @@ fn spawn_enemies (
                     ..default()
                 },
                 Transform::from_xyz(0.0, 0.0, 15.0),
-                Enemy {id: ((GAME_TIME - game_time.timer) / ENEMY_SPAWNS).round() as usize, image: "enemyblue.png", variant: EnemyVariant::Standard, memory: Vec::new(), memory_recency: true, target: None, rage: true, stun_timer: 0.0},
+                Enemy {id: ((GAME_TIME - game_time.timer) / ENEMY_SPAWNS).round() as usize, 
+                    image: "enemyblue.png", 
+                    variant: EnemyVariant::Standard, 
+                    memory: Vec::new(), 
+                    memory_recency: true, 
+                    target: None, 
+                    hp: EnemyVariant::Standard.hp(),
+                    rage: true, 
+                    stun_timer: 0.0},
                 Health { current: ENEMY_CURRENT_HP, max: ENEMY_MAX_HP},
             ));
         }

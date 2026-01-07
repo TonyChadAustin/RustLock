@@ -15,6 +15,7 @@ use crate::stats::MenuScreen;
 use crate::stats::QuitButton;
 use crate::stats::SettingsButton;
 use crate::stats::PlayButton;
+use crate::stats::BackToMenuButton;
 use crate::stats::Grid;
 use crate::stats::Box;
 use crate::stats::Map;
@@ -29,6 +30,7 @@ use crate::stats::QUIT_BUTTON_POS;
 use crate::stats::PLAYER_BUILD_STUN;
 use crate::stats::BOX_HP;
 use crate::stats::TOGGLE_FULLSCREEN_BUTTON_POS;
+use crate::stats::BACK_TO_MENU_BUTTON_POS;
 
 
 pub struct InteractionPlugin;
@@ -43,6 +45,7 @@ impl Plugin for InteractionPlugin {
             play_button,
             spawn_object_at_cursor,
             toggle_fullscreen_button,
+            back_to_menu_button,
         ));
         app.insert_resource(CursorPos(Vec2::default(), None));
         app.insert_resource(GameState { game_state: States::StartMenu, update_pathfind: false, grid_pairs: BTreeMap::new()});
@@ -232,6 +235,7 @@ fn play_button(
 }
 
 fn settings_button(
+    mut primary_window: Query<&mut Window, With<PrimaryWindow>>,
     mouse_input: Res<ButtonInput<MouseButton>>,
     cursor_pos: Res<CursorPos>,
     mut commands: Commands,
@@ -256,14 +260,35 @@ fn settings_button(
                     game_state.game_state = States::SettingsMenu;
 
                     //spawn all the settings assets here?
+                    let mut togglefullscreenimage = "cell.png";
+                    let window = match primary_window.single_mut() {
+                        Ok(w) => w,
+                        Err(_) => return,
+                    };
+
+                    if window.mode == WindowMode::BorderlessFullscreen(MonitorSelection::Primary) {
+                        togglefullscreenimage = "cell.png";
+                    } 
+                    else {
+                        togglefullscreenimage = "check.png";
+                    }
                     commands.spawn( (
                         Sprite {
                             custom_size: Some(Vec2::new(TOGGLE_FULLSCREEN_BUTTON_POS.0, TOGGLE_FULLSCREEN_BUTTON_POS.1)),
-                            image: asset_server.load("cell.png"),
+                            image: asset_server.load(togglefullscreenimage),
                             ..default()
                         },
                         Transform::from_xyz(TOGGLE_FULLSCREEN_BUTTON_POS.2, TOGGLE_FULLSCREEN_BUTTON_POS.3, 1.0),
                         ToggleFullscreenButton,
+                    ));
+                    commands.spawn( (
+                        Sprite {
+                            custom_size: Some(Vec2::new(BACK_TO_MENU_BUTTON_POS.0, BACK_TO_MENU_BUTTON_POS.1)),
+                            image: asset_server.load("back.png"),
+                            ..default()
+                        },
+                        Transform::from_xyz(BACK_TO_MENU_BUTTON_POS.2, BACK_TO_MENU_BUTTON_POS.3, 1.0),
+                        BackToMenuButton,
                     ));
                 }
             }
@@ -296,6 +321,9 @@ fn toggle_fullscreen_button(
     game_state: ResMut<GameState>,
     mouse_input: Res<ButtonInput<MouseButton>>,
     cursor_pos: Res<CursorPos>,
+    asset_server: Res<AssetServer>,
+    mut commands: Commands,
+    mut toggle_fullscreen_button: Query<&mut Sprite, With<ToggleFullscreenButton>>,
 ) {
     match game_state.game_state {
         States::SettingsMenu => (),
@@ -313,12 +341,51 @@ fn toggle_fullscreen_button(
 
                     window.mode = if window.mode == WindowMode::BorderlessFullscreen(MonitorSelection::Primary) {
                         window.resolution.set(1820.0, 980.0);
+                        if let Ok(mut sprite) = toggle_fullscreen_button.single_mut() {
+                            sprite.image = asset_server.load("check.png");
+                        }
                         WindowMode::Windowed
                     }
                     else 
-                    {
+                    {   
+                        if let Ok(mut sprite) = toggle_fullscreen_button.single_mut() {
+                            sprite.image = asset_server.load("cell.png");
+                        }
                         WindowMode::BorderlessFullscreen(MonitorSelection::Primary)
                     };
+                }
+            }
+        }
+    }
+}
+
+fn back_to_menu_button(
+    mouse_input: Res<ButtonInput<MouseButton>>,
+    cursor_pos: Res<CursorPos>,
+    mut commands: Commands,
+    play_button: Query<Entity, With<PlayButton>>,
+    settings_button: Query<Entity, With<SettingsButton>>,
+    quit_button: Query<Entity, With<QuitButton>>,
+    toggle_fullscreen_button: Query<Entity, With<ToggleFullscreenButton>>,
+    back_to_menu_button: Query<Entity, With<BackToMenuButton>>,
+    mut game_state: ResMut<GameState>,
+) {
+    match game_state.game_state {
+        States::SettingsMenu => (),
+        _ => return,
+    }
+    if mouse_input.just_pressed(MouseButton::Left) {
+        if let Some(world_position) = cursor_pos.1 {
+            if world_position.x > BACK_TO_MENU_BUTTON_POS.2 - (BACK_TO_MENU_BUTTON_POS.0 / 2.0) + 4.0 && world_position.x < BACK_TO_MENU_BUTTON_POS.2 + (BACK_TO_MENU_BUTTON_POS.0 / 2.0) - 4.0 {
+                if world_position.y > BACK_TO_MENU_BUTTON_POS.3 - (BACK_TO_MENU_BUTTON_POS.1 / 2.0) + 4.0 && world_position.y < BACK_TO_MENU_BUTTON_POS.3 + (BACK_TO_MENU_BUTTON_POS.1 / 2.0) - 4.0 {
+                    commands.entity(play_button.single().unwrap()).insert(Visibility::Visible);
+                    commands.entity(settings_button.single().unwrap()).insert(Visibility::Visible);
+                    commands.entity(quit_button.single().unwrap()).insert(Visibility::Visible);
+                    commands.entity(toggle_fullscreen_button.single().unwrap()).despawn();
+                    commands.entity(back_to_menu_button.single().unwrap()).despawn();
+                    
+                    game_state.game_state = States::StartMenu;
+
                 }
             }
         }
