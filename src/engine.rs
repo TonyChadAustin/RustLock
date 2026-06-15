@@ -21,7 +21,10 @@ use crate::stats::{Player,
     ENEMY_ATTACK_STUN,
     PLAY_BUTTON_POS,
     SETTINGS_BUTTON_POS,
-    QUIT_BUTTON_POS,};
+    QUIT_BUTTON_POS,
+    TimerText,
+    PLAYER_HP,
+};
 
 
 pub struct Node {
@@ -107,12 +110,29 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         },
         Transform::from_xyz(300.0, 0.0, 999.0),
         Player {stun_timer: 0.0},
-        Health {current: 10, max: 10},
+        Health {current: PLAYER_HP, max: PLAYER_HP},
         Visibility::Hidden,
     )).id();
 
+    //commands.entity(player).with_children(|parent| {
+     //   parent.spawn(Camera2d::default());
+    //});
+
     commands.entity(player).with_children(|parent| {
-        parent.spawn(Camera2d::default());
+        let camera = parent.spawn(Camera2d::default()).id();
+        
+        parent.commands().entity(camera).with_children(|cam| {
+            cam.spawn((
+                Text2d::new("30"),
+                TextFont {
+                    font_size: 48.0,
+                    ..default()
+                },
+                TextColor(Color::WHITE),
+                Transform::from_xyz(0.0, 600.0, 10.0),
+                TimerText,
+            ));
+        });
     });
 }
 

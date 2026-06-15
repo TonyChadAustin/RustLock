@@ -7,10 +7,11 @@ use rand::prelude::*;
 //PLAYER STATS
 pub const SPAWNABLE_RANGE: f32 = 200.0;
 pub const BOX_HP: i32 = 5;
+pub const PLAYER_HP: i32 = 10;
 
 //GAME STATS
 pub const GRID_SIZE: i32 = 1300; // 1300 minimum that looks clean, more might be better idk
-pub const GAME_TIME: f32 = 600.0;
+pub const GAME_TIME: f32 = 300.0;
 
 //ENEMY STATS
 pub const ENEMY_SPAWNS: f32 = 10.0;
@@ -27,6 +28,7 @@ pub const PLAY_BUTTON_POS: (f32, f32, f32, f32) = (400.0, 180.0, 300.0, 0.0); //
 pub const SETTINGS_BUTTON_POS: (f32, f32, f32, f32) = (400.0, 180.0, 300.0, -250.0);
 pub const QUIT_BUTTON_POS: (f32, f32, f32, f32) = (400.0, 180.0, 300.0, -500.0);
 pub const TOGGLE_FULLSCREEN_BUTTON_POS: (f32, f32, f32, f32) = (50.0, 50.0, 300.0, -100.0);
+pub const TOGGLE_FULLSCREEN_LABEL: &str = "Toggle Fullscreen";
 pub const BACK_TO_MENU_BUTTON_POS: (f32, f32, f32, f32) = (400.0, 180.0, 700.0, -250.0);
 
 #[derive(Resource)]
@@ -99,6 +101,12 @@ pub struct Enemy {
 pub struct MenuScreen;
 
 #[derive(Component)]
+pub struct WinScreen;
+
+#[derive(Component)]
+pub struct LoseScreen;
+
+#[derive(Component)]
 pub struct PlayButton;
 
 #[derive(Component)]
@@ -109,6 +117,9 @@ pub struct SettingsButton;
 
 #[derive(Component)]
 pub struct ToggleFullscreenButton;
+
+#[derive(Component)]
+pub struct ToggleFullscreenText;
 
 #[derive(Component)]
 pub struct BackToMenuButton;
@@ -163,6 +174,9 @@ pub struct GameState {
 }
 
 pub struct StatsPlugin;
+
+#[derive(Component)]
+pub struct TimerText;
 
 impl Plugin for StatsPlugin {
     fn build(&self, app: &mut App) {

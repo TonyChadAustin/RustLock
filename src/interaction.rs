@@ -5,32 +5,35 @@ use bevy::window::{PrimaryWindow, PresentMode, WindowMode};
 use std::process::exit;
 use std::collections::BTreeMap;
 
-use crate::stats::{GameState, ToggleFullscreenButton};
-use crate::stats::States;
-use crate::stats::GameTimer;
-use crate::stats::Health;
-use crate::stats::CursorPos;
-use crate::stats::Player;
-use crate::stats::MenuScreen;
-use crate::stats::QuitButton;
-use crate::stats::SettingsButton;
-use crate::stats::PlayButton;
-use crate::stats::BackToMenuButton;
-use crate::stats::Grid;
-use crate::stats::Box;
-use crate::stats::Map;
-use crate::stats::Enemy;
-use crate::stats::SPAWNABLE_RANGE;
-//use crate::stats::Line;
-use crate::stats::PLAYER_SPEED;
-use crate::stats::GAME_TIME;
-use crate::stats::PLAY_BUTTON_POS;
-use crate::stats::SETTINGS_BUTTON_POS;
-use crate::stats::QUIT_BUTTON_POS;
-use crate::stats::PLAYER_BUILD_STUN;
-use crate::stats::BOX_HP;
-use crate::stats::TOGGLE_FULLSCREEN_BUTTON_POS;
-use crate::stats::BACK_TO_MENU_BUTTON_POS;
+use crate::stats::{GameState,
+     ToggleFullscreenButton,
+     States,
+     GameTimer,
+     Health,
+     CursorPos,
+     Player,
+     MenuScreen,
+     QuitButton,
+     SettingsButton,
+     PlayButton,
+     BackToMenuButton,
+     Grid,
+     Box,
+     Map,
+     Enemy,
+     SPAWNABLE_RANGE,
+     PLAYER_SPEED,
+     GAME_TIME,
+     PLAY_BUTTON_POS,
+     SETTINGS_BUTTON_POS,
+     QUIT_BUTTON_POS,
+     PLAYER_BUILD_STUN,
+     BOX_HP,
+     TOGGLE_FULLSCREEN_BUTTON_POS,
+     TOGGLE_FULLSCREEN_LABEL,
+     BACK_TO_MENU_BUTTON_POS,
+     ToggleFullscreenText,
+};
 
 
 pub struct InteractionPlugin;
@@ -79,8 +82,12 @@ fn character_movement(
     mut player: Query<(&mut Transform, &mut Player), With<Player>>,
     input: Res<ButtonInput<KeyCode>>,
     time: Res<Time>,
-    game_state: Res<GameState>,
+    mut game_state: ResMut<GameState>,
 ) {
+    if input.pressed(KeyCode::Escape) {
+        exit(1); //ez out
+        //game_state.game_state = States::StartMenu
+    }
     match game_state.game_state {
         States::Level1 => (),
         _ => return,
@@ -170,9 +177,6 @@ fn character_movement(
                         transform.translation.y -= speed;
                     }
                 }
-            }
-            if input.pressed(KeyCode::Escape) {
-                exit(1); //ez out
             }
         }
     }
@@ -267,10 +271,10 @@ fn settings_button(
                     };
 
                     if window.mode == WindowMode::BorderlessFullscreen(MonitorSelection::Primary) {
-                        togglefullscreenimage = "cell.png";
+                        togglefullscreenimage = "check.png";
                     } 
                     else {
-                        togglefullscreenimage = "check.png";
+                        togglefullscreenimage = "cell.png";
                     }
                     commands.spawn( (
                         Sprite {
@@ -280,6 +284,17 @@ fn settings_button(
                         },
                         Transform::from_xyz(TOGGLE_FULLSCREEN_BUTTON_POS.2, TOGGLE_FULLSCREEN_BUTTON_POS.3, 1.0),
                         ToggleFullscreenButton,
+                    ));
+                    commands.spawn((
+                        Text2d::new(TOGGLE_FULLSCREEN_LABEL),
+                        TextFont {
+                            font_size: 24.0,
+                            ..default()
+                        },
+                        TextColor(Color::WHITE),
+                        TextLayout::new_with_justify(JustifyText::Left),
+                        Transform::from_xyz(TOGGLE_FULLSCREEN_BUTTON_POS.2 + 150.0,TOGGLE_FULLSCREEN_BUTTON_POS.3,1.0,),
+                        ToggleFullscreenText, // optional marker, see below
                     ));
                     commands.spawn( (
                         Sprite {
@@ -367,6 +382,7 @@ fn back_to_menu_button(
     settings_button: Query<Entity, With<SettingsButton>>,
     quit_button: Query<Entity, With<QuitButton>>,
     toggle_fullscreen_button: Query<Entity, With<ToggleFullscreenButton>>,
+    toggle_fullscreen_text: Query<Entity, With<ToggleFullscreenText>>,
     back_to_menu_button: Query<Entity, With<BackToMenuButton>>,
     mut game_state: ResMut<GameState>,
 ) {
@@ -382,6 +398,7 @@ fn back_to_menu_button(
                     commands.entity(settings_button.single().unwrap()).insert(Visibility::Visible);
                     commands.entity(quit_button.single().unwrap()).insert(Visibility::Visible);
                     commands.entity(toggle_fullscreen_button.single().unwrap()).despawn();
+                    commands.entity(toggle_fullscreen_text.single().unwrap()).despawn();
                     commands.entity(back_to_menu_button.single().unwrap()).despawn();
                     
                     game_state.game_state = States::StartMenu;
@@ -444,7 +461,7 @@ fn spawn_object_at_cursor(
                     if circle.y >= 0.0 { wy += 25;}
                     else { wy -= 25;}
                 }
-                if (Vec2::new(player_pos.x, player_pos.y) - Vec2::new(wx as f32, wy as f32).trunc()).length() > 85.0 {
+                if (Vec2::new(player_pos.x, player_pos.y) - Vec2::new(wx as f32, wy as f32).trunc()).length() > 75.0 {
                     let mut boxes_checked = true;
 
                     if game_state.grid_pairs[&(wx-25, wy-25)] 
